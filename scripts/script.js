@@ -82,34 +82,38 @@ function giphtionaryInit() {
       console.error("error:", error);
     });
 
-  messageBody.addEventListener("keypress", e => {
+  messageBody.addEventListener("keyup", e => {
     let searchTerm = e.target.value;
 
-    fetch(
-      `http://api.giphy.com/v1/gifs/search?q=${searchTerm}&api_key=${GiphyApiKey}&limit=12`
-    )
-      .then(res => res.json())
-      .then(data => {
-        // remove after new api calls
-        while (renderTempGifs.firstChild)
-          renderTempGifs.removeChild(renderTempGifs.firstChild);
+    axios({
+      method: "GET",
+      url: "https://proxy.hackeryou.com",
+      dataResponse: "json",
+      params: {
+        reqUrl: `http://api.giphy.com/v1/gifs/search?q=${searchTerm}&api_key=${GiphyApiKey}&limit=12`,
+        xmlToJSON: false
+      }
+    }).then(res => {
+      // remove after new api calls
+      while (renderTempGifs.firstChild)
+        renderTempGifs.removeChild(renderTempGifs.firstChild);
 
-        let gifsToRender = data.data;
+      let gifsToRender = res.data.data;
 
-        gifsToRender.forEach(gif => {
-          const gifHtml = document.createElement("div");
-          gifHtml.setAttribute("class", "gifHtml");
+      gifsToRender.forEach(gif => {
+        const gifHtml = document.createElement("div");
+        gifHtml.setAttribute("class", "gifHtml");
 
-          gifHtml.innerHTML = `<div class="gif-box">
+        gifHtml.innerHTML = `<div class="gif-box">
           <div class="img-box">
           <img class="all-gifs" src="${gif.images.downsized.url}" alt="gifs">
           </div>
           <p class="gif-title">${gif.title}</p>
       </div>
       `;
-          renderTempGifs.appendChild(gifHtml);
-        });
+        renderTempGifs.appendChild(gifHtml);
       });
+    });
 
     // if the textbox still has images stored, typing will overwrite the textContent
     hiddenGifContainer.textContent = searchTerm;
